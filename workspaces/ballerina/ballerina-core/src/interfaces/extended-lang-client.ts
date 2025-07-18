@@ -1133,6 +1133,20 @@ export interface RenameIdentifierRequest {
     newName: string;
 }
 
+export interface ImportTibcoRequest {
+    orgName: string;
+    packageName: string;
+    sourcePath: string;
+}
+
+export interface ImportTibcoResponse {
+    error: string;
+    textEdits: {
+        [key: string]: string;
+    };
+    report: string;
+}
+
 // <-------- Trigger Related ------->
 export interface TriggerModelsRequest {
     organization?: string;
