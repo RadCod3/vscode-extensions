@@ -240,7 +240,7 @@ import {
     DeleteMappingRequest,
     MapWithCustomFnRequest,
     ImportTibcoRequest,
-    ImportTibcoResponse
+    ImportIntegrationResponse
 } from "@wso2/ballerina-core";
 import { BallerinaExtension } from "./index";
 import { debug, handlePullModuleProgress } from "../utils";
@@ -1195,9 +1195,9 @@ export class ExtendedLangClient extends LanguageClient implements ExtendedLangCl
         return this.sendRequest<OpenAPIClientDeleteResponse>(EXTENDED_APIS.OPEN_API_CLIENT_DELETE, params);
     }
 
-    async importTibcoToBI(params: ImportTibcoRequest): Promise<ImportTibcoResponse> {
+    async importTibcoToBI(params: ImportTibcoRequest): Promise<ImportIntegrationResponse> {
         debug(`Importing Tibco to Ballerina: ${JSON.stringify(params)}`);
-        return this.sendRequest<ImportTibcoResponse>(EXTENDED_APIS.TIBCO_TO_BI, params);
+        return this.sendRequest<ImportIntegrationResponse>(EXTENDED_APIS.TIBCO_TO_BI, params);
     }
 
     // <------------ BI APIS END --------------->
