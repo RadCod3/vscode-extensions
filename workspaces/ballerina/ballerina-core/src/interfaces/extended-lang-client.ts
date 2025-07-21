@@ -1139,7 +1139,7 @@ export interface ImportTibcoRequest {
     sourcePath: string;
 }
 
-export interface ImportTibcoResponse {
+export interface ImportIntegrationResponse {
     error: string;
     textEdits: {
         [key: string]: string;
