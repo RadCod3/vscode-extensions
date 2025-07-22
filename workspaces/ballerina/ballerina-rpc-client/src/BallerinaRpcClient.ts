@@ -38,6 +38,8 @@ import {
     PopupVisualizerLocation,
     getPopupVisualizerState,
     onDownloadProgress,
+    onMigrationToolLogs,
+    onMigrationToolStateChanged,
     DownloadProgress,
     breakpointChanged,
     AIMachineEventType,
@@ -218,6 +220,14 @@ export class BallerinaRpcClient {
 
     onDownloadProgress(callback: (state: DownloadProgress) => void) {
         this.messenger.onNotification(onDownloadProgress, callback);
+    }
+
+    onMigrationToolLogs(callback: (message: string) => void) {
+        this.messenger.onNotification(onMigrationToolLogs, callback);
+    }
+
+    onMigrationToolStateChanged(callback: (state: string) => void) {
+        this.messenger.onNotification(onMigrationToolStateChanged, callback);
     }
 
     getPopupVisualizerState(): Promise<PopupVisualizerLocation> {
