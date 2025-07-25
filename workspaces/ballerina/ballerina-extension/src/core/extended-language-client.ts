@@ -167,6 +167,7 @@ import {
     VisualizableFieldsRequest,
     VisualizableFieldsResponse,
     AddArrayElementRequest,
+    ConvertToQueryRequest,
     GetTestFunctionRequest,
     GetTestFunctionResponse,
     AddOrUpdateTestFunctionRequest,
@@ -217,6 +218,9 @@ import {
     MemoryManagersRequest,
     MemoryManagersResponse,
     ArtifactsNotification,
+    AddClausesRequest,
+    PropertyRequest,
+    PropertyResponse,
     OpenConfigTomlRequest,
     UpdateConfigVariableRequestV2,
     GetConfigVariableNodeTemplateRequest,
@@ -228,13 +232,26 @@ import {
     JsonToTypeRequest,
     JsonToTypeResponse,
     FunctionFromSourceRequest,
-    FunctionFromSourceResponse
+    FunctionFromSourceResponse,
+    GetInlineDataMapperCodedataRequest,
+    GetInlineDataMapperCodedataResponse,
+    GetSubMappingCodedataRequest,
+    AddSubMappingRequest,
+    DeleteMappingRequest,
+    MapWithCustomFnRequest,
+    ImportTibcoRequest,
+    ImportIntegrationResponse,
+    onMigrationToolStateChanged,
+    onMigrationToolLogs,
+    GetMigrationToolsResponse
 } from "@wso2/ballerina-core";
 import { BallerinaExtension } from "./index";
 import { debug, handlePullModuleProgress } from "../utils";
 import { CMP_LS_CLIENT_COMPLETIONS, CMP_LS_CLIENT_DIAGNOSTICS, getMessageObject, sendTelemetryEvent, TM_EVENT_LANG_CLIENT } from "../features/telemetry";
 import { DefinitionParams, InitializeParams, InitializeResult, Location, LocationLink, TextDocumentPositionParams } from 'vscode-languageserver-protocol';
 import { updateProjectArtifacts } from "../utils/project-artifacts";
+import { RPCLayer } from "../../src/RPCLayer";
+import { VisualizerWebview } from "../../src/views/visualizer/webview";
 
 export const CONNECTOR_LIST_CACHE = "CONNECTOR_LIST_CACHE";
 export const HTTP_CONNECTOR_LIST_CACHE = "HTTP_CONNECTOR_LIST_CACHE";
@@ -304,6 +321,14 @@ enum EXTENDED_APIS {
     DATA_MAPPER_GET_SOURCE = 'dataMapper/getSource',
     DATA_MAPPER_VISUALIZABLE = 'dataMapper/visualizable',
     DATA_MAPPER_ADD_ELEMENT = 'dataMapper/addElement',
+    DATA_MAPPER_CONVERT_TO_QUERY = 'dataMapper/convertToQuery',
+    DATA_MAPPER_ADD_CLAUSES = 'dataMapper/addClauses',
+    DATA_MAPPER_ADD_SUB_MAPPING = 'dataMapper/addSubMapping',
+    DATA_MAPPER_DELETE_MAPPING = 'dataMapper/deleteMapping',
+    DATA_MAPPER_MAP_WITH_CUSTOM_FN = 'dataMapper/customFunction',
+    DATA_MAPPER_CODEDATA = 'dataMapper/nodePosition',
+    DATA_MAPPER_SUB_MAPPING_CODEDATA = 'dataMapper/subMapping',
+    DATA_MAPPER_PROPERTY = 'dataMapper/fieldPosition',
     VIEW_CONFIG_VARIABLES = 'configEditor/getConfigVariables',
     UPDATE_CONFIG_VARIABLES = 'configEditor/updateConfigVariables',
     VIEW_CONFIG_VARIABLES_V2 = 'configEditorV2/getConfigVariables',
@@ -379,7 +404,11 @@ enum EXTENDED_APIS {
     OPEN_API_GENERATED_MODULES = 'openAPIService/getModules',
     OPEN_API_CLIENT_DELETE = 'openAPIService/deleteModule',
     GET_ARTIFACTS = 'designModelService/artifacts',
-    PUBLISH_ARTIFACTS = 'designModelService/publishArtifacts'
+    PUBLISH_ARTIFACTS = 'designModelService/publishArtifacts',
+    GET_MIGRATION_TOOLS = 'projectService/getMigrationTools',
+    TIBCO_TO_BI = 'projectService/importTibco',
+    MIGRATION_TOOL_STATE = 'projectService/stateCallback',
+    MIGRATION_TOOL_LOG = 'projectService/logCallback',
 }
 
 enum EXTENDED_APIS_ORG {
@@ -474,6 +503,32 @@ export class ExtendedLangClient extends LanguageClient implements ExtendedLangCl
                 }
             } catch (error) {
                 console.error("Error in PUBLISH_ARTIFACTS handler:", error);
+            }
+        });
+    }
+
+    registerMigrationToolCallbacks(): void {
+        this.onNotification(EXTENDED_APIS.MIGRATION_TOOL_STATE, (res: ArtifactsNotification) => {
+            try {
+                RPCLayer._messenger.sendNotification(
+                    onMigrationToolStateChanged,
+                    { type: "webview", webviewType: VisualizerWebview.viewType },
+                    res
+                );
+            } catch (error) {
+                console.error("Error in MIGRATION_TOOL_STATE handler:", error);
+            }
+        });
+
+        this.onNotification(EXTENDED_APIS.MIGRATION_TOOL_LOG, (res: ArtifactsNotification) => {
+            try {
+                RPCLayer._messenger.sendNotification(
+                    onMigrationToolLogs,
+                    { type: "webview", webviewType: VisualizerWebview.viewType },
+                    res
+                );
+            } catch (error) {
+                console.error("Error in MIGRATION_TOOL_LOG handler:", error);
             }
         });
     }
@@ -662,7 +717,7 @@ export class ExtendedLangClient extends LanguageClient implements ExtendedLangCl
         return this.sendRequest<InlineDataMapperModelResponse>(EXTENDED_APIS.DATA_MAPPER_MAPPINGS, params);
     }
 
-    async getInlineDataMapperSource(params: InlineDataMapperSourceRequest): Promise<InlineDataMapperSourceResponse | NOT_SUPPORTED_TYPE> {
+    async getInlineDataMapperSource(params: InlineDataMapperSourceRequest): Promise<InlineDataMapperSourceResponse> {
         return this.sendRequest<InlineDataMapperSourceResponse>(EXTENDED_APIS.DATA_MAPPER_GET_SOURCE, params);
     }
 
@@ -670,8 +725,40 @@ export class ExtendedLangClient extends LanguageClient implements ExtendedLangCl
         return this.sendRequest<VisualizableFieldsResponse>(EXTENDED_APIS.DATA_MAPPER_VISUALIZABLE, params);
     }
 
-    async addArrayElement(params: AddArrayElementRequest): Promise<InlineDataMapperSourceResponse | NOT_SUPPORTED_TYPE> {
+    async addArrayElement(params: AddArrayElementRequest): Promise<InlineDataMapperSourceResponse> {
         return this.sendRequest<InlineDataMapperSourceResponse>(EXTENDED_APIS.DATA_MAPPER_ADD_ELEMENT, params);
+    }
+
+    async convertToQuery(params: ConvertToQueryRequest): Promise<InlineDataMapperSourceResponse> {
+        return this.sendRequest<InlineDataMapperSourceResponse>(EXTENDED_APIS.DATA_MAPPER_CONVERT_TO_QUERY, params);
+    }
+
+    async addClauses(params: AddClausesRequest): Promise<InlineDataMapperSourceResponse> {
+        return this.sendRequest<InlineDataMapperSourceResponse>(EXTENDED_APIS.DATA_MAPPER_ADD_CLAUSES, params);
+    }
+
+    async addSubMapping(params: AddSubMappingRequest): Promise<InlineDataMapperSourceResponse> {
+        return this.sendRequest<InlineDataMapperSourceResponse>(EXTENDED_APIS.DATA_MAPPER_ADD_SUB_MAPPING, params);
+    }
+
+    async deleteMapping(params: DeleteMappingRequest): Promise<InlineDataMapperSourceResponse> {
+        return this.sendRequest<InlineDataMapperSourceResponse>(EXTENDED_APIS.DATA_MAPPER_DELETE_MAPPING, params);
+    }
+
+    async mapWithCustomFn(params: MapWithCustomFnRequest): Promise<InlineDataMapperSourceResponse> {
+        return this.sendRequest<InlineDataMapperSourceResponse>(EXTENDED_APIS.DATA_MAPPER_MAP_WITH_CUSTOM_FN, params);
+    }
+
+    async getDataMapperCodedata(params: GetInlineDataMapperCodedataRequest): Promise<GetInlineDataMapperCodedataResponse> {
+        return this.sendRequest<GetInlineDataMapperCodedataResponse>(EXTENDED_APIS.DATA_MAPPER_CODEDATA, params);
+    }
+
+    async getSubMappingCodedata(params: GetSubMappingCodedataRequest): Promise<GetInlineDataMapperCodedataResponse> {
+        return this.sendRequest<GetInlineDataMapperCodedataResponse>(EXTENDED_APIS.DATA_MAPPER_SUB_MAPPING_CODEDATA, params);
+    }
+
+    async getProperty(params: PropertyRequest): Promise<PropertyResponse | NOT_SUPPORTED_TYPE> {
+        return this.sendRequest<PropertyResponse>(EXTENDED_APIS.DATA_MAPPER_PROPERTY, params);
     }
 
     async getGraphqlModel(params: GraphqlDesignServiceParams): Promise<GraphqlDesignService | NOT_SUPPORTED_TYPE> {
@@ -1140,6 +1227,15 @@ export class ExtendedLangClient extends LanguageClient implements ExtendedLangCl
 
     async deleteOpenApiGeneratedModule(params: OpenAPIClientDeleteRequest): Promise<OpenAPIClientDeleteResponse> {
         return this.sendRequest<OpenAPIClientDeleteResponse>(EXTENDED_APIS.OPEN_API_CLIENT_DELETE, params);
+    }
+
+    async getMigrationTools(): Promise<GetMigrationToolsResponse> {
+        return this.sendRequest<GetMigrationToolsResponse>(EXTENDED_APIS.GET_MIGRATION_TOOLS);
+    }
+
+    async importTibcoToBI(params: ImportTibcoRequest): Promise<ImportIntegrationResponse> {
+        debug(`Importing Tibco to Ballerina: ${JSON.stringify(params)}`);
+        return this.sendRequest<ImportIntegrationResponse>(EXTENDED_APIS.TIBCO_TO_BI, params);
     }
 
     // <------------ BI APIS END --------------->

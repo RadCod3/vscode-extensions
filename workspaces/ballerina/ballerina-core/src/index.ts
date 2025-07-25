@@ -71,6 +71,9 @@ export * from "./rpc-types/lang-client/interfaces";
 export * from "./rpc-types/library-browser";
 export * from "./rpc-types/library-browser/rpc-type";
 export * from "./rpc-types/library-browser/interfaces";
+export * from "./rpc-types/migrate-integration";
+export * from "./rpc-types/migrate-integration/rpc-type";
+export * from "./rpc-types/migrate-integration/interfaces";
 export * from "./rpc-types/common";
 export * from "./rpc-types/common/rpc-type";
 export * from "./rpc-types/common/interfaces";
@@ -112,5 +115,9 @@ export * from "./icons"
 
 // ------ AI Panel Related Interfaces -------->
 export * from "./interfaces/ai-panel";
+
+// ------ Flow Model Utils -------->
+export * from "./flow-model/BaseVisitor";
+export * from "./flow-model/flow-model-utils";
 
 export { Diagnostic } from "vscode-languageserver-types";

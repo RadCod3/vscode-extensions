@@ -44,6 +44,7 @@ import { registerIcpServiceRpcHandlers } from './rpc-managers/icp-service/rpc-ha
 import { extension } from './BalExtensionContext';
 import { registerAgentChatRpcHandlers } from './rpc-managers/agent-chat/rpc-handler';
 import { ArtifactsUpdated, ArtifactNotificationHandler } from './utils/project-artifacts-handler';
+import { registerMigrateIntegrationRpcHandlers } from './rpc-managers/migrate-integration/rpc-handler';
 
 export class RPCLayer {
     static _messenger: Messenger = new Messenger();
@@ -102,6 +103,9 @@ export class RPCLayer {
         // ----- Popup Views RPC Methods
         RPCLayer._messenger.onRequest(getPopupVisualizerState, () => getPopupContext());
 
+        // ----- Register Integration Migration RPC Methods
+        registerMigrateIntegrationRpcHandlers(RPCLayer._messenger);
+
         // ----- Artifact Updated Common Notification
         RPCLayer._messenger.onRequest(onArtifactUpdatedRequest, (artifactData: ArtifactData) => {
             // Get the notification handler instance
@@ -142,6 +146,7 @@ async function getContext(): Promise<VisualizerLocation> {
             scope: context.scope,
             org: context.org,
             package: context.package,
+            dataMapperMetadata: context.dataMapperMetadata
         });
     });
 }

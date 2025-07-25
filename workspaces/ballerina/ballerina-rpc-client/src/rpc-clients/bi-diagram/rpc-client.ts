@@ -74,6 +74,7 @@ import {
     JsonToTypeRequest,
     JsonToTypeResponse,
     LinePosition,
+    MigrateRequest,
     ModelFromCodeRequest,
     OpenAPIClientDeleteRequest,
     OpenAPIClientDeleteResponse,
@@ -162,6 +163,7 @@ import {
     getVisibleVariableTypes,
     getWorkspaces,
     handleReadmeContent,
+    migrateProject,
     openAIChat,
     openConfigToml,
     openReadme,
@@ -224,6 +226,10 @@ export class BiDiagramRpcClient implements BIDiagramAPI {
 
     createProject(params: ProjectRequest): void {
         return this._messenger.sendNotification(createProject, HOST_EXTENSION, params);
+    }
+
+    migrateProject(params: MigrateRequest): void {
+        return this._messenger.sendNotification(migrateProject, HOST_EXTENSION, params);
     }
 
     getWorkspaces(): Promise<WorkspacesResponse> {

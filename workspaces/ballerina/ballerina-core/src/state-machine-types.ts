@@ -20,7 +20,7 @@ import { NotificationType, RequestType } from "vscode-messenger-common";
 import { NodePosition, STNode } from "@wso2/syntax-tree";
 import { LinePosition } from "./interfaces/common";
 import { Type } from "./interfaces/extended-lang-client";
-import { DIRECTORY_MAP, ProjectStructureArtifactResponse, ProjectStructureResponse } from "./interfaces/bi";
+import { CodeData, DIRECTORY_MAP, ProjectStructureArtifactResponse, ProjectStructureResponse } from "./interfaces/bi";
 
 export type MachineStateValue =
     | 'initialize'
@@ -66,12 +66,14 @@ export enum MACHINE_VIEW {
     ServiceDesigner = "Service Designer",
     ERDiagram = "ER Diagram",
     DataMapper = "Data Mapper",
+    InlineDataMapper = "Inline Data Mapper",
     GraphQLDiagram = "GraphQL Diagram",
     TypeDiagram = "Type Diagram",
     SetupView = "Setup View",
     BIDiagram = "BI Diagram",
     BIWelcome = "BI Welcome",
     BIProjectForm = "BI Project SKIP",
+    BIImportIntegration = "BI Import Integration SKIP",
     BIComponentView = "BI Component View",
     AddConnectionWizard = "Add Connection Wizard",
     ViewConfigVariables = "View Config Variables",
@@ -114,6 +116,7 @@ export interface VisualizerLocation {
     documentUri?: string;
     projectUri?: string;
     identifier?: string;
+    artifactType?: DIRECTORY_MAP;
     position?: NodePosition;
     syntaxTree?: STNode;
     isBI?: boolean;
@@ -127,6 +130,7 @@ export interface VisualizerLocation {
     projectStructure?: ProjectStructureResponse;
     org?: string;
     package?: string;
+    dataMapperMetadata?: DataMapperMetadata;
 }
 
 export interface ArtifactData {
@@ -140,6 +144,11 @@ export interface VisualizerMetadata {
     recordFilePath?: string;
     enableSequenceDiagram?: boolean; // Enable sequence diagram view
     target?: LinePosition;
+}
+
+export interface DataMapperMetadata {
+    name: string;
+    codeData: CodeData;
 }
 
 export interface PopupVisualizerLocation extends VisualizerLocation {
@@ -163,6 +172,8 @@ export interface DownloadProgress {
 
 export const stateChanged: NotificationType<MachineStateValue> = { method: 'stateChanged' };
 export const onDownloadProgress: NotificationType<DownloadProgress> = { method: 'onDownloadProgress' };
+export const onMigrationToolLogs: NotificationType<string> = { method: 'onMigrationToolLogs' };
+export const onMigrationToolStateChanged: NotificationType<string> = { method: 'onMigrationToolStateChanged' };
 export const projectContentUpdated: NotificationType<boolean> = { method: 'projectContentUpdated' };
 export const getVisualizerLocation: RequestType<void, VisualizerLocation> = { method: 'getVisualizerLocation' };
 export const webviewReady: NotificationType<void> = { method: `webviewReady` };

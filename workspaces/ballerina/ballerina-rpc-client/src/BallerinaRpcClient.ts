@@ -38,6 +38,8 @@ import {
     PopupVisualizerLocation,
     getPopupVisualizerState,
     onDownloadProgress,
+    onMigrationToolLogs,
+    onMigrationToolStateChanged,
     DownloadProgress,
     breakpointChanged,
     AIMachineEventType,
@@ -51,7 +53,7 @@ import {
 import { LangClientRpcClient } from "./rpc-clients/lang-client/rpc-client";
 import { LibraryBrowserRpcClient } from "./rpc-clients/library-browser/rpc-client";
 import { HOST_EXTENSION } from "vscode-messenger-common";
-import { CommonRpcClient, GraphqlDesignerRpcClient, PersistDiagramRpcClient, RecordCreatorRpcClient, ServiceDesignerRpcClient, AiPanelRpcClient } from "./rpc-clients";
+import { CommonRpcClient, GraphqlDesignerRpcClient, PersistDiagramRpcClient, RecordCreatorRpcClient, ServiceDesignerRpcClient, AiPanelRpcClient, MigrateIntegrationRpcClient } from "./rpc-clients";
 import { BiDiagramRpcClient } from "./rpc-clients/bi-diagram/rpc-client";
 import { ConnectorWizardRpcClient } from "./rpc-clients/connector-wizard/rpc-client";
 import { SequenceDiagramRpcClient } from "./rpc-clients/sequence-diagram/rpc-client";
@@ -77,6 +79,7 @@ export class BallerinaRpcClient {
     private _aiPanel: AiPanelRpcClient;
     private _connectorWizard: ConnectorWizardRpcClient;
     private _inlineDataMapper: InlineDataMapperRpcClient;
+    private _migrateIntegration: MigrateIntegrationRpcClient;
     private _testManager: TestManagerServiceRpcClient;
     private _aiAgent: AiAgentRpcClient;
     private _icpManager: ICPServiceRpcClient;
@@ -98,6 +101,7 @@ export class BallerinaRpcClient {
         this._aiPanel = new AiPanelRpcClient(this.messenger);
         this._connectorWizard = new ConnectorWizardRpcClient(this.messenger);
         this._inlineDataMapper = new InlineDataMapperRpcClient(this.messenger);
+        this._migrateIntegration = new MigrateIntegrationRpcClient(this.messenger);
         this._testManager = new TestManagerServiceRpcClient(this.messenger);
         this._aiAgent = new AiAgentRpcClient(this.messenger);
         this._icpManager = new ICPServiceRpcClient(this.messenger);
@@ -168,6 +172,10 @@ export class BallerinaRpcClient {
         return this._inlineDataMapper;
     }
 
+    getMigrateIntegrationRpcClient(): MigrateIntegrationRpcClient {
+        return this._migrateIntegration;
+    }
+
     getVisualizerLocation(): Promise<VisualizerLocation> {
         return this.messenger.sendRequest(getVisualizerLocation, HOST_EXTENSION);
     }
@@ -212,6 +220,14 @@ export class BallerinaRpcClient {
 
     onDownloadProgress(callback: (state: DownloadProgress) => void) {
         this.messenger.onNotification(onDownloadProgress, callback);
+    }
+
+    onMigrationToolLogs(callback: (message: string) => void) {
+        this.messenger.onNotification(onMigrationToolLogs, callback);
+    }
+
+    onMigrationToolStateChanged(callback: (state: string) => void) {
+        this.messenger.onNotification(onMigrationToolStateChanged, callback);
     }
 
     getPopupVisualizerState(): Promise<PopupVisualizerLocation> {
