@@ -16,10 +16,27 @@
  * under the License.
  */
 
-import { Attachment } from "@wso2/ballerina-core";
+export interface MigrationTool {
+    id: string;
+    title: string;
+    needsPull: boolean;
+    parameters: Array<{
+        key: string;
+        label: string;
+        type: "boolean" | "string" | "number";
+        defaultValue?: boolean | string | number;
+    }>;
+}
 
-export interface TestGeneratorIntermediaryState {
-    content: [string, Attachment[]];
-    resourceFunction: string;
-    testPlan: string;
+export interface GetMigrationToolsResponse {
+    tools: MigrationTool[];
+}
+
+export interface MigrationToolPullRequest {
+    toolName: string;
+}
+
+export interface ImportTibcoRPCRequest {
+    packageName: string;
+    sourcePath: string;
 }

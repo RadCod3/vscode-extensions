@@ -31,6 +31,7 @@ import { CDModel } from "./component-diagram";
 import { DMModel, ExpandedDMModel, IntermediateClause, Mapping, VisualizableField, CustomFnMetadata } from "./inline-data-mapper";
 import { DataMapperMetadata, SCOPE } from "../state-machine-types";
 import { Attachment } from "../rpc-types/ai-panel/interfaces";
+import { ToolParameters } from "../rpc-types/ai-agent/interfaces";
 
 export interface DidOpenParams {
     textDocument: TextDocumentItem;
@@ -289,6 +290,7 @@ export interface InitialIDMSourceResponse {
     textEdits: {
         [key: string]: TextEdit[];
     };
+    codedata?: CodeData;
 }
 
 export interface InlineDataMapperModelRequest {
@@ -352,7 +354,7 @@ export interface AddArrayElementRequest {
     propertyKey?: string;
 }
 
-export interface ConvertToQueryRequest{
+export interface ConvertToQueryRequest {
     filePath: string;
     codedata: CodeData;
     varName?: string;
@@ -387,7 +389,7 @@ export interface DeleteMappingRequest {
     targetField: string;
 }
 
-export interface MapWithCustomFnRequest{
+export interface MapWithCustomFnRequest {
     filePath: string;
     codedata: CodeData;
     mapping: Mapping;
@@ -834,9 +836,10 @@ export type SearchQueryParams = {
     limit?: number;
     offset?: number;
     includeAvailableFunctions?: string;
+    includeCurrentOrganizationInSearch?: boolean;
 }
 
-export type SearchKind = 'FUNCTION' | 'CONNECTOR' | 'TYPE' | "NP_FUNCTION";
+export type SearchKind = 'FUNCTION' | 'CONNECTOR' | 'TYPE' | "NP_FUNCTION" | "MODEL_PROVIDER" | "VECTOR_STORE" | "EMBEDDING_PROVIDER" | "VECTOR_KNOWLEDGE_BASE";
 
 export type BISearchRequest = {
     position: LineRange;
@@ -1126,6 +1129,20 @@ export interface RenameIdentifierRequest {
     fileName: string;
     position: Position;
     newName: string;
+}
+
+export interface ImportTibcoRequest {
+    orgName: string;
+    packageName: string;
+    sourcePath: string;
+}
+
+export interface ImportIntegrationResponse {
+    error: string;
+    textEdits: {
+        [key: string]: string;
+    };
+    report: string;
 }
 
 // <-------- Trigger Related ------->
@@ -1530,8 +1547,17 @@ export interface FunctionNodeResponse {
 
 // <-------- AI Agent Related ------->
 
+export interface AiModuleOrgRequest {
+    projectPath: string;
+}
+
+export interface AiModuleOrgResponse {
+    orgName: string;
+}
+
 export interface AINodesRequest {
     filePath: string;
+    orgName: string;
 }
 export interface AINodesResponse {
     agents?: CodeData[];
@@ -1539,6 +1565,7 @@ export interface AINodesResponse {
 }
 export interface MemoryManagersRequest {
     filePath: string;
+    orgName: string;
 }
 export interface MemoryManagersResponse {
     memoryManagers?: CodeData[];
@@ -1551,13 +1578,49 @@ export interface AIModelsResponse {
 export interface AIModelsRequest {
     agent: any;
     filePath?: string;
+    orgName: string;
 }
 
 export interface AIToolsRequest {
     filePath: string;
+    serviceUrl?: string;
+    configs?: Record<string, string>;
 }
+
 export interface AIToolsResponse {
     tools: string[];
+}
+
+export interface AIToolRequest {
+    toolName: string;
+    projectPath: string;
+}
+
+export interface AIToolResponse {
+    name: string;
+    source: string;
+    toolParameters: Property;
+    connection: string;
+    description: string;
+    toolDescription: string;
+    diagram: FunctionNode;
+    output: {
+        [key: string]: TextEdit[];
+    };
+}
+
+export interface McpToolsRequest {
+    serviceUrl?: string;
+    configs?: Record<string, string>;
+    filePath?: string;
+}
+
+export interface McpToolsResponse {
+    tools: Array<{
+        name: string;
+        description?: string;
+    }>;
+    error?: string;
 }
 
 export interface AIGentToolsRequest {
@@ -1566,6 +1629,7 @@ export interface AIGentToolsRequest {
     toolName: string;
     description: string;
     connection: string;
+    toolParameters?: ToolParameters;
 }
 
 export interface AIGentToolsResponse {
@@ -1660,7 +1724,8 @@ export enum ARTIFACT_TYPE {
     Types = "Types",
     NaturalFunctions = "Natural Functions",
     DataMappers = "Data Mappers",
-    Configurations = "Configurations"
+    Configurations = "Configurations",
+    Variables = "Variables"
 }
 
 export interface Artifacts {
@@ -1750,6 +1815,7 @@ export interface BIInterface extends BaseLangClientInterface {
     getAllModels: (params: AIModelsRequest) => Promise<AINodesResponse>;
     getModels: (params: AIModelsRequest) => Promise<AIModelsResponse>;
     getTools: (params: AIToolsRequest) => Promise<AIToolsResponse>;
+    getMcpTools: (params: McpToolsRequest) => Promise<McpToolsResponse>;
     genTool: (params: AIGentToolsRequest) => Promise<AIGentToolsResponse>;
 }
 

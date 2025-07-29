@@ -16,7 +16,7 @@
  * under the License.
  */
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
     KeyboardNavigationManager,
     MachineStateValue,
@@ -27,6 +27,7 @@ import {
 } from "@wso2/ballerina-core";
 import { useRpcContext } from "@wso2/ballerina-rpc-client";
 import { Global, css } from "@emotion/react";
+import { debounce } from "lodash";
 import styled from "@emotion/styled";
 import { LoadingRing } from "./components/Loader";
 import { DataMapper } from "./views/DataMapper";
@@ -70,6 +71,7 @@ import { AIChatAgentWizard } from "./views/BI/AIChatAgent/AIChatAgentWizard";
 import { BallerinaUpdateView } from "./views/BI/BallerinaUpdateView";
 import { VSCodeProgressRing } from "@vscode/webview-ui-toolkit/react";
 import { InlineDataMapper } from "./views/InlineDataMapper";
+import { ImportIntegration } from "./views/BI/ImportIntegration";
 
 const globalStyles = css`
     *,
@@ -179,9 +181,15 @@ const MainPanel = () => {
 
     rpcClient?.onStateChanged((newState: MachineStateValue) => {
         if (typeof newState === "object" && "viewActive" in newState && newState.viewActive === "viewReady") {
-            fetchContext();
+            debounceFetchContext();
         }
     });
+
+    const debounceFetchContext = useCallback(
+        debounce(() => {
+            fetchContext();
+        }, 200), []
+    );
 
     rpcClient?.onPopupStateChanged((newState: PopupMachineStateValue) => {
         setPopupState(newState);
@@ -377,6 +385,11 @@ const MainPanel = () => {
                         setShowHome(false);
                         setViewComponent(<ProjectForm />);
                         break;
+                    case MACHINE_VIEW.BIImportIntegration:
+                        setShowHome(false);
+                        setViewComponent(<ImportIntegration />);
+                        break;
+
                     case MACHINE_VIEW.BIComponentView:
                         setViewComponent(<ComponentListView scope={value.scope} />);
                         break;
@@ -465,7 +478,7 @@ const MainPanel = () => {
     };
 
     useEffect(() => {
-        fetchContext();
+        debounceFetchContext();
     }, [breakpointState]);
 
     useEffect(() => {

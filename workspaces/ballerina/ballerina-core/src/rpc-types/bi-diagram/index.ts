@@ -110,7 +110,8 @@ import {
     RecordsInWorkspaceMentions,
     BuildMode,
     DevantMetadata,
-    GeneratedClientSaveResponse
+    GeneratedClientSaveResponse,
+    MigrateRequest
 } from "./interfaces";
 
 export interface BIDiagramAPI {
@@ -119,10 +120,15 @@ export interface BIDiagramAPI {
     deleteFlowNode: (params: BISourceCodeRequest) => Promise<UpdatedArtifactsResponse>;
     deleteByComponentInfo: (params: BIDeleteByComponentInfoRequest) => Promise<BIDeleteByComponentInfoResponse>;
     getAvailableNodes: (params: BIAvailableNodesRequest) => Promise<BIAvailableNodesResponse>;
+    getAvailableModelProviders: (params: BIAvailableNodesRequest) => Promise<BIAvailableNodesResponse>;
+    getAvailableVectorStores: (params: BIAvailableNodesRequest) => Promise<BIAvailableNodesResponse>;
+    getAvailableEmbeddingProviders: (params: BIAvailableNodesRequest) => Promise<BIAvailableNodesResponse>;
+    getAvailableVectorKnowledgeBases: (params: BIAvailableNodesRequest) => Promise<BIAvailableNodesResponse>;
     getEnclosedFunction: (params: BIGetEnclosedFunctionRequest) => Promise<BIGetEnclosedFunctionResponse>;
     getNodeTemplate: (params: BINodeTemplateRequest) => Promise<BINodeTemplateResponse>;
     getAiSuggestions: (params: BIAiSuggestionsRequest) => Promise<BIAiSuggestionsResponse>;
     createProject: (params: ProjectRequest) => void;
+    migrateProject: (params: MigrateRequest) => void;
     getWorkspaces: () => Promise<WorkspacesResponse>;
     getProjectStructure: () => Promise<ProjectStructureResponse>;
     getProjectComponents: () => Promise<ProjectComponentsResponse>;
