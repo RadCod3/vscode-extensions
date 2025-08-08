@@ -16,14 +16,32 @@
  * under the License.
  */
 
-export * from "./lang-client/rpc-client";
-export * from "./library-browser/rpc-client";
-export * from "./service-designer/rpc-client";
-export * from "./common/rpc-client";
-export * from "./persist-diagram/rpc-client";
-export * from "./graphql-designer/rpc-client";
-export * from "./record-creator/rpc-client";
-export * from "./ai-panel/rpc-client";
-export * from "./connector-wizard/rpc-client";
-export * from "./test-manager/rpc-client";
-export * from "./migrate-integration/rpc-client";
+export interface MigrationTool {
+    id: number;
+    title: string;
+    needToPull: boolean;
+    commandName: string;
+    description: string;
+    requiredVersion: string;
+    parameters: Array<{
+        key: string;
+        label: string;
+        type: "boolean" | "string" | "number";
+        defaultValue?: boolean | string | number;
+    }>;
+}
+
+export interface GetMigrationToolsResponse {
+    tools: MigrationTool[];
+}
+
+export interface MigrationToolPullRequest {
+    toolName: string;
+}
+
+export interface ImportIntegrationRPCRequest {
+    type: number;
+    packageName: string;
+    sourcePath: string;
+    [key: string]: any;
+}
