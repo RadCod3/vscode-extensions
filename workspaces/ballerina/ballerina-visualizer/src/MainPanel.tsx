@@ -24,6 +24,7 @@ import {
     MACHINE_VIEW,
     PopupMachineStateValue,
     EVENT_TYPE,
+    ParentPopupData,
 } from "@wso2/ballerina-core";
 import { useRpcContext } from "@wso2/ballerina-rpc-client";
 import { Global, css } from "@emotion/react";
@@ -71,6 +72,7 @@ import { AIChatAgentWizard } from "./views/BI/AIChatAgent/AIChatAgentWizard";
 import { BallerinaUpdateView } from "./views/BI/BallerinaUpdateView";
 import { VSCodeProgressRing } from "@vscode/webview-ui-toolkit/react";
 import { InlineDataMapper } from "./views/InlineDataMapper";
+import { ImportIntegration } from "./views/BI/ImportIntegration";
 
 const globalStyles = css`
     *,
@@ -384,6 +386,11 @@ const MainPanel = () => {
                         setShowHome(false);
                         setViewComponent(<ProjectForm />);
                         break;
+                    case MACHINE_VIEW.BIImportIntegration:
+                        setShowHome(false);
+                        setViewComponent(<ImportIntegration />);
+                        break;
+
                     case MACHINE_VIEW.BIComponentView:
                         setViewComponent(<ComponentListView scope={value.scope} />);
                         break;
@@ -490,10 +497,10 @@ const MainPanel = () => {
         setPopupMessage(false);
     };
 
-    const handleOnClose = () => {
+    const handleOnClose = (parent?: ParentPopupData) => {
         rpcClient
             .getVisualizerRpcClient()
-            .openView({ type: EVENT_TYPE.CLOSE_VIEW, location: { view: null }, isPopup: true });
+            .openView({ type: EVENT_TYPE.CLOSE_VIEW, location: { view: null, recentIdentifier: parent?.recentIdentifier, artifactType: parent?.artifactType }, isPopup: true });
     };
 
     return (

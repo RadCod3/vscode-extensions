@@ -248,13 +248,20 @@ import {
     DeleteMappingRequest,
     MapWithCustomFnRequest,
     AIToolResponse,
-    AIToolRequest
+    AIToolRequest,
+    ImportIntegrationRequest,
+    ImportIntegrationResponse,
+    onMigrationToolStateChanged,
+    onMigrationToolLogs,
+    GetMigrationToolsResponse
 } from "@wso2/ballerina-core";
 import { BallerinaExtension } from "./index";
 import { debug, handlePullModuleProgress } from "../utils";
 import { CMP_LS_CLIENT_COMPLETIONS, CMP_LS_CLIENT_DIAGNOSTICS, getMessageObject, sendTelemetryEvent, TM_EVENT_LANG_CLIENT } from "../features/telemetry";
 import { DefinitionParams, InitializeParams, InitializeResult, Location, LocationLink, TextDocumentPositionParams } from 'vscode-languageserver-protocol';
 import { updateProjectArtifacts } from "../utils/project-artifacts";
+import { RPCLayer } from "../../src/RPCLayer";
+import { VisualizerWebview } from "../../src/views/visualizer/webview";
 
 export const CONNECTOR_LIST_CACHE = "CONNECTOR_LIST_CACHE";
 export const HTTP_CONNECTOR_LIST_CACHE = "HTTP_CONNECTOR_LIST_CACHE";
@@ -289,6 +296,7 @@ enum EXTENDED_APIS {
     EXAMPLE_LIST = 'ballerinaExample/list',
     PERF_ANALYZER_RESOURCES_ENDPOINTS = 'performanceAnalyzer/getResourcesWithEndpoints',
     RESOLVE_MISSING_DEPENDENCIES = 'ballerinaDocument/resolveMissingDependencies',
+    RESOLVE_MODULE_DEPENDENCIES = 'ballerinaDocument/resolveModuleDependencies',
     BALLERINA_TO_OPENAPI = 'openAPILSExtension/generateOpenAPI',
     NOTEBOOK_RESULT = "balShell/getResult",
     NOTEBOOK_FILE_SOURCE = "balShell/getShellFileSource",
@@ -416,7 +424,12 @@ enum EXTENDED_APIS {
     GET_ARTIFACTS = 'designModelService/artifacts',
     PUBLISH_ARTIFACTS = 'designModelService/publishArtifacts',
     COPILOT_ALL_LIBRARIES = 'copilotLibraryManager/getLibrariesList',
-    COPILOT_FILTER_LIBRARIES = 'copilotLibraryManager/getFilteredLibraries'
+    COPILOT_FILTER_LIBRARIES = 'copilotLibraryManager/getFilteredLibraries',
+    GET_MIGRATION_TOOLS = 'projectService/getMigrationTools',
+    TIBCO_TO_BI = 'projectService/importTibco',
+    MULE_TO_BI = 'projectService/importMule',
+    MIGRATION_TOOL_STATE = 'projectService/stateCallback',
+    MIGRATION_TOOL_LOG = 'projectService/logCallback',
 }
 
 enum EXTENDED_APIS_ORG {
@@ -511,6 +524,32 @@ export class ExtendedLangClient extends LanguageClient implements ExtendedLangCl
                 }
             } catch (error) {
                 console.error("Error in PUBLISH_ARTIFACTS handler:", error);
+            }
+        });
+    }
+
+    registerMigrationToolCallbacks(): void {
+        this.onNotification(EXTENDED_APIS.MIGRATION_TOOL_STATE, (res: ArtifactsNotification) => {
+            try {
+                RPCLayer._messenger.sendNotification(
+                    onMigrationToolStateChanged,
+                    { type: "webview", webviewType: VisualizerWebview.viewType },
+                    res
+                );
+            } catch (error) {
+                console.error("Error in MIGRATION_TOOL_STATE handler:", error);
+            }
+        });
+
+        this.onNotification(EXTENDED_APIS.MIGRATION_TOOL_LOG, (res: ArtifactsNotification) => {
+            try {
+                RPCLayer._messenger.sendNotification(
+                    onMigrationToolLogs,
+                    { type: "webview", webviewType: VisualizerWebview.viewType },
+                    res
+                );
+            } catch (error) {
+                console.error("Error in MIGRATION_TOOL_LOG handler:", error);
             }
         });
     }
@@ -915,7 +954,12 @@ export class ExtendedLangClient extends LanguageClient implements ExtendedLangCl
 
     async resolveMissingDependencies(req: SyntaxTreeParams): Promise<SyntaxTree | NOT_SUPPORTED_TYPE> {
         handlePullModuleProgress();
-        return this.sendRequest(EXTENDED_APIS.RESOLVE_MISSING_DEPENDENCIES, req);
+        const response = await this.sendRequest(EXTENDED_APIS.RESOLVE_MISSING_DEPENDENCIES, req);
+        return response;
+    }
+
+    async resolveModuleDependencies(req: SyntaxTreeParams): Promise<SyntaxTree | NOT_SUPPORTED_TYPE> {
+        return this.sendRequest(EXTENDED_APIS.RESOLVE_MODULE_DEPENDENCIES, req);
     }
 
     async convertToOpenAPI(params: OpenAPIConverterParams): Promise<OpenAPISpec | NOT_SUPPORTED_TYPE> {
@@ -1238,7 +1282,7 @@ export class ExtendedLangClient extends LanguageClient implements ExtendedLangCl
     async deleteOpenApiGeneratedModule(params: OpenAPIClientDeleteRequest): Promise<OpenAPIClientDeleteResponse> {
         return this.sendRequest<OpenAPIClientDeleteResponse>(EXTENDED_APIS.OPEN_API_CLIENT_DELETE, params);
     }
-
+    
     async getCopilotCompactLibraries(params: CopilotAllLibrariesRequest): Promise<CopilotCompactLibrariesResponse> {
         return this.sendRequest<CopilotCompactLibrariesResponse>(EXTENDED_APIS.COPILOT_ALL_LIBRARIES, params);
     }
@@ -1247,6 +1291,19 @@ export class ExtendedLangClient extends LanguageClient implements ExtendedLangCl
         return this.sendRequest<CopilotFilterLibrariesResponse>(EXTENDED_APIS.COPILOT_FILTER_LIBRARIES, params);
     }
 
+    async getMigrationTools(): Promise<GetMigrationToolsResponse> {
+        return this.sendRequest<GetMigrationToolsResponse>(EXTENDED_APIS.GET_MIGRATION_TOOLS);
+    }
+
+    async importTibcoToBI(params: ImportIntegrationRequest): Promise<ImportIntegrationResponse> {
+        debug(`Importing Tibco to Ballerina: ${JSON.stringify(params)}`);
+        return this.sendRequest<ImportIntegrationResponse>(EXTENDED_APIS.TIBCO_TO_BI, params);
+    }
+
+    async importMuleToBI(params: ImportIntegrationRequest): Promise<ImportIntegrationResponse> {
+        debug(`Importing Mule to Ballerina: ${JSON.stringify(params)}`);
+        return this.sendRequest<ImportIntegrationResponse>(EXTENDED_APIS.MULE_TO_BI, params);
+    }
 
     // <------------ BI APIS END --------------->
 
