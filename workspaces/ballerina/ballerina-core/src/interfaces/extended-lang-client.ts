@@ -1146,7 +1146,7 @@ export interface ImportIntegrationResponse {
         [key: string]: string;
     };
     report: string;
-    reportJson: string;
+    jsonReport: string;
 }
 
 // <-------- Trigger Related ------->
