@@ -30,6 +30,7 @@ import graphqlService from './api-services/graphql-service.spec';
 import tcpService from './api-services/tcp-service.spec';
 
 import kafkaIntegration from './event-integrations/kafka.spec';
+import ibmmqIntegration from './event-integrations/ibmmq.spec';
 import rabbitmqIntegration from './event-integrations/rabbitmq.spec';
 import mqttIntegration from './event-integrations/mqtt.spec';
 import azureIntegration from './event-integrations/azure.spec';
@@ -72,6 +73,7 @@ test.describe(tcpService);
 
 // <----Event Integration Test---->
 test.describe(kafkaIntegration);
+test.describe(ibmmqIntegration);
 test.describe(rabbitmqIntegration);
 test.describe(mqttIntegration);
 test.describe(azureIntegration);
