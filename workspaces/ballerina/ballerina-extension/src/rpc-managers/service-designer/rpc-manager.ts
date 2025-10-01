@@ -463,12 +463,45 @@ export class ServiceDesignerRpcManager implements ServiceDesignerAPI {
                     }
                 }
                 const res: SourceEditResponse = await context.langClient.createServiceAndListener(params);
+                // HACK to handle the HACK in updateSourceCode for toml files causing bi to not redirect to 
+                // the service designer view after creation.
 
-                const edits = { textEdits: res.textEdits, resolveMissingDependencies: false };
+                // Separate Ballerina.toml edits from other edits
+                const tomlEdits: { [key: string]: any[] } = {};
+                const otherEdits: { [key: string]: any[] } = {};
 
-                const artifacts = await updateSourceCode(edits, { artifactType: DIRECTORY_MAP.SERVICE });
+                if (res.textEdits) {
+                    for (const filePath in res.textEdits) {
+                        if (filePath.endsWith('Ballerina.toml')) {
+                            tomlEdits[filePath] = res.textEdits[filePath];
+                        } else {
+                            otherEdits[filePath] = res.textEdits[filePath];
+                        }
+                    }
+                }
+
+                let allArtifacts = [];
+
+                // Process Ballerina.toml edits separately
+                if (Object.keys(tomlEdits).length > 0) {
+                    const tomlArtifacts = await updateSourceCode(
+                        { textEdits: tomlEdits, resolveMissingDependencies: false },
+                        { artifactType: DIRECTORY_MAP.SERVICE }
+                    );
+                    allArtifacts.push(...tomlArtifacts);
+                }
+
+                // Process other edits together
+                if (Object.keys(otherEdits).length > 0) {
+                    const otherArtifacts = await updateSourceCode(
+                        { textEdits: otherEdits, resolveMissingDependencies: false },
+                        { artifactType: DIRECTORY_MAP.SERVICE }
+                    );
+                    allArtifacts.push(...otherArtifacts);
+                }
+
                 let result: UpdatedArtifactsResponse = {
-                    artifacts: artifacts
+                    artifacts: allArtifacts
                 };
                 resolve(result);
             } catch (error) {
