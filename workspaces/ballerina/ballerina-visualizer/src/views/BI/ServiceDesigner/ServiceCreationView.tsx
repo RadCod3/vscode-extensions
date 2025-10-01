@@ -443,6 +443,7 @@ export function ServiceCreationView(props: ServiceCreationViewProps) {
                                                 preserveFieldOrder={true}
                                                 recordTypeFields={recordTypeFields}
                                                 changeOptionalFieldTitle={"Optional Listener Configurations"}
+                                                nestedForm={true}
                                             />
                                         )}
                                     </FormContainer>
