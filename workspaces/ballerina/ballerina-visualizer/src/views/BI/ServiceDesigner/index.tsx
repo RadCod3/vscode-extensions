@@ -289,9 +289,24 @@ export function ServiceDesigner(props: ServiceDesignerProps) {
                 }
                 const property = service.properties[key];
                 if (property.enabled === true) {
-                    readonlyProps.add({ label: property.metadata.label, value: property.value || property.values });
+                    readonlyProps.add({
+                        label: property.metadata.label,
+                        value: property.value || property.values,
+                    });
                 }
             });
+            // If service.readonlyProperties is defined, add those as well
+            if (service.readonlyProperties) {
+                Object.keys(service.readonlyProperties).forEach((key) => {
+                    const property = service.readonlyProperties[key];
+                    if (property.enabled === true) {
+                        readonlyProps.add({
+                            label: property.metadata.label,
+                            value: property.value || property.values,
+                        });
+                    }
+                });
+            }
             setReadonlyProperties(readonlyProps);
             setIsHttpService(service.moduleName === "http");
             setIsMcpService(service.moduleName === "mcp");

@@ -49,6 +49,7 @@ export interface ServiceModel {
     listenerProtocol: string;
     icon: string;
     properties?: ConfigProperties;
+    readonlyProperties?: ConfigProperties;
     functions?: FunctionModel[];
     codedata?: CodeData;
 }
