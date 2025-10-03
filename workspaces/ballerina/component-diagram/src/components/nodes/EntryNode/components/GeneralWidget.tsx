@@ -115,6 +115,8 @@ function getCustomEntryNodeIcon(type: string) {
             return <Icon name="bi-github" />;
         case "http":
             return <Icon name="bi-globe" />;
+        case "ibmmq":
+            return <Icon name="bi-ibmmq" />;
         default:
             return null;
     }

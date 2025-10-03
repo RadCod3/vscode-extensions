@@ -113,6 +113,8 @@ export function getCustomEntryNodeIcon(type: string) {
             return <Icon name="bi-java" />;
         case "trigger.github":
             return <Icon name="bi-github" />;
+        case "ibm.ibmmq":
+            return <Icon name="bi-ibmmq" />;
         default:
             return null;
     }

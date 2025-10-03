@@ -426,6 +426,8 @@ function getCustomEntryNodeIcon(type: string) {
             return "bi-ftp";
         case "file":
             return "bi-file";
+        case "ibm.ibmmq":
+            return "bi-ibmmq";
         default:
             return "bi-globe";
     }
