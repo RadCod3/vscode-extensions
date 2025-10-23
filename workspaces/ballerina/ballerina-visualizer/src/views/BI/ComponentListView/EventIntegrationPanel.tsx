@@ -115,6 +115,8 @@ export function getCustomEntryNodeIcon(type: string) {
             return <Icon name="bi-github" />;
         case "ibm.ibmmq":
             return <Icon name="bi-ibmmq" />;
+        case "solace":
+            return <Icon name="bi-solace" sx={{ color: "#00C895" }}/>;
         default:
             return null;
     }

@@ -428,6 +428,8 @@ function getCustomEntryNodeIcon(type: string) {
             return "bi-file";
         case "ibm.ibmmq":
             return "bi-ibmmq";
+        case "solace":
+            return "bi-solace";
         default:
             return "bi-globe";
     }
