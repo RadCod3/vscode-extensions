@@ -17,7 +17,7 @@
  */
 
 import styled from "@emotion/styled";
-import { FunctionModel, ParameterModel, Type } from "@wso2/ballerina-core";
+import { ConfigProperties, FunctionModel, ParameterModel, PayloadContext, Type } from "@wso2/ballerina-core";
 import {
     ActionButtons,
     CheckBox,
@@ -101,10 +101,13 @@ export interface DatabindFormProps {
     isSaving?: boolean;
     onSave: (functionModel: FunctionModel) => void;
     onClose: () => void;
+    payloadContext?: PayloadContext;
+    serviceProperties?: ConfigProperties;
+    serviceModuleName?: string;
 }
 
 export function DatabindForm(props: DatabindFormProps) {
-    const { model, isSaving = false, onSave, onClose } = props;
+    const { model, isSaving = false, onSave, onClose, payloadContext, serviceProperties, serviceModuleName } = props;
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [functionModel, setFunctionModel] = useState<FunctionModel>(model);
@@ -139,6 +142,19 @@ export function DatabindForm(props: DatabindFormProps) {
         const moduleName = functionModel?.codedata?.moduleName || "";
         const key = `${moduleName}-${parameterName}`.toLowerCase();
         return parameterDescriptionMap[key] || "";
+    };
+
+    /**
+     * Gets the queue description string based on module name
+     * @param moduleName - The module name (e.g., "rabbitmq", "kafka")
+     * @returns Description string about where the payload comes from
+     */
+    const getQueueDescriptionByModule = (moduleName: string): string => {
+        const queueDescriptionMap: Record<string, string> = {
+            "rabbitmq": `The payload comes from a queue called ${serviceProperties.stringLiteral?.value || ''}`,
+            "kafka": "The payload comes from a Kafka topic",
+        };
+        return queueDescriptionMap[moduleName?.toLowerCase()] || "";
     };
 
     const handleParamChange = (params: ParameterModel[]) => {
@@ -541,6 +557,12 @@ export function DatabindForm(props: DatabindFormProps) {
                 initialTypeName={generatePayloadTypeName()}
                 editMode={false}
                 modalTitle={"Define " + payloadFieldName + " Schema"}
+                payloadContext={{
+                    ...payloadContext,
+                    resourceDocumentation: payloadContext?.resourceDocumentation
+                        ? `${payloadContext.resourceDocumentation}. ${getQueueDescriptionByModule(serviceModuleName || '')}`
+                        : getQueueDescriptionByModule(serviceModuleName || '')
+                }}
                 modalWidth={650}
                 modalHeight={600}
             />

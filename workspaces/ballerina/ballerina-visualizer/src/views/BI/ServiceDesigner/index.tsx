@@ -25,7 +25,8 @@ import {
     MACHINE_VIEW,
     ProjectStructureArtifactResponse,
     ComponentInfo,
-    ServiceModel
+    ServiceModel,
+    ParamDetails
 } from "@wso2/ballerina-core";
 import { useRpcContext } from "@wso2/ballerina-rpc-client";
 import { PanelContainer } from "@wso2/ballerina-side-panel";
@@ -209,7 +210,6 @@ export function ServiceDesigner(props: ServiceDesignerProps) {
     const [selectedHandler, setSelectedHandler] = useState<FunctionModel>(undefined);
 
     const [initFunction, setInitFunction] = useState<FunctionModel>(undefined);
-
 
     const handleCloseInitFunction = () => {
         setInitFunction(undefined);
@@ -1165,6 +1165,16 @@ export function ServiceDesigner(props: ServiceDesignerProps) {
                                         isSaving={isSaving}
                                         onSave={handleFunctionSubmit}
                                         onClose={handleNewFunctionClose}
+                                        payloadContext={{
+                                            serviceName: serviceModel.name || '',
+                                            serviceBasePath: serviceModel.properties?.basePath?.value || '',
+                                            ...(functionModel?.metadata && {
+                                                resourceDocumentation: functionModel.metadata?.description,
+                                                resourceMethod: functionModel.metadata?.label
+                                            })
+                                        }}
+                                        serviceProperties={serviceModel.properties}
+                                        serviceModuleName={serviceModel.moduleName}
                                     />
                                 </PanelContainer>
                             )}
