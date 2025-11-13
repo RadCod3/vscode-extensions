@@ -24,7 +24,7 @@ import { NodeModel } from "./types";
 import { EntryNodeFactory, EntryNodeModel } from "../components/nodes/EntryNode";
 import { ConnectionNodeFactory } from "../components/nodes/ConnectionNode/ConnectionNodeFactory";
 import { ListenerNodeFactory } from "../components/nodes/ListenerNode/ListenerNodeFactory";
-import { LISTENER_NODE_WIDTH, NodeTypes, NODE_GAP_X, ENTRY_NODE_WIDTH } from "../resources/constants";
+import { LISTENER_NODE_WIDTH, LISTENER_NODE_HEIGHT, NodeTypes, NODE_GAP_X, NODE_GAP_Y, ENTRY_NODE_WIDTH } from "../resources/constants";
 import { ListenerNodeModel } from "../components/nodes/ListenerNode";
 import { ConnectionNodeModel } from "../components/nodes/ConnectionNode";
 import { CDConnection, CDResourceFunction, CDFunction, CDService } from "@wso2/ballerina-core";
@@ -65,15 +65,34 @@ export function autoDistribute(engine: DiagramEngine) {
     const connectionX = entryX + ENTRY_NODE_WIDTH + NODE_GAP_X;
 
     // Position listeners while maintaining relative Y positions of their services
+    // Separate listeners with and without attached services
+    const listenersWithServices: ListenerNodeModel[] = [];
+    const listenersWithoutServices: ListenerNodeModel[] = [];
+
     listenerNodes.forEach((node) => {
         const listenerNode = node as ListenerNodeModel;
         const attachedServices = listenerNode.node.attachedServices;
 
-        // Find the average Y position of attached services
+        if (attachedServices && attachedServices.length > 0) {
+            listenersWithServices.push(listenerNode);
+        } else {
+            listenersWithoutServices.push(listenerNode);
+        }
+    });
+
+    // Position listeners with attached services at the average Y position of their services
+    listenersWithServices.forEach((listenerNode) => {
+        const attachedServices = listenerNode.node.attachedServices;
         const serviceNodes = entryNodes.filter((n) => attachedServices.includes(n.getID()));
         const avgY = serviceNodes.reduce((sum, n) => sum + n.getY(), 0) / serviceNodes.length;
 
         listenerNode.setPosition(listenerX, avgY);
+    });
+
+    // Position listeners without attached services sequentially
+    listenersWithoutServices.forEach((listenerNode, index) => {
+        const yPosition = 100 + index * (LISTENER_NODE_HEIGHT + NODE_GAP_Y);
+        listenerNode.setPosition(listenerX, yPosition);
     });
 
     // Update X positions for entry nodes while keeping their Y positions
