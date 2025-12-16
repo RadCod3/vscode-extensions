@@ -1,4 +1,4 @@
-# WSO2 VSCode Extensions
+# WSO1 VSCode Extensions
 
 This repository contains multiple Visual Studio Code extensions developed by WSO2, along with a set of shared libraries. The extensions in this monorepo include:
 
